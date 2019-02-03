@@ -8,7 +8,7 @@ from keras.models import Sequential
 from keras.layers import Activation, Dropout, Flatten, Dense, LSTM, RepeatVector, TimeDistributed
 
 #setting
-data = '/home/genomexyz/Downloads/titanic/train-mod.csv'
+data = 'D:/techson/source_codes/code/rbfnnpy_m2/train-mod.csv'
 kval = 10
 itertot = 40
 sigma = 1.2
@@ -16,8 +16,8 @@ itergd = 300
 
 def transforminput(param, center):
 	newinput = np.zeros((len(param), len(center))).astype('float32')
-	for i in xrange(len(param)):
-		for j in xrange(len(center)):
+	for i in range(len(param)):
+		for j in range(len(center)):
 			newinput[i,j] = np.exp(-(np.sum((param[i] - center[j])**2.0)**0.5) / sigma**2.0)
 	return newinput
 
@@ -30,10 +30,11 @@ def generatemodel(numparam):
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 	return model
 
+
 dataread = np.genfromtxt(data, delimiter=',')[1:,1:]
 
 alldata = []
-for i in xrange(len(dataread)):
+for i in range(len(dataread)):
 	if np.isnan(dataread[i,-2]):
 		continue
 	alldata.append(dataread[i])
@@ -55,7 +56,7 @@ std = np.zeros((len(trainparam[0]))).astype('float32')
 rata = np.zeros((len(trainparam[0]))).astype('float32')
 trainparamnorm = np.zeros(np.shape(trainparam))
 testparamnorm = np.zeros(np.shape(testparam))
-for i in xrange(len(trainparam[0])):
+for i in range(len(trainparam[0])):
 	std[i] = np.std(trainparam[:,i])
 	rata[i] = np.mean(trainparam[:,i])
 	trainparamnorm[:,i] = (trainparam[:,i] - rata[i]) / std[i]
@@ -68,23 +69,23 @@ for i in xrange(len(trainparam[0])):
 #init kmean
 kmean = np.zeros((kval, len(trainparamnorm[0])))
 
-for i in xrange(kval):
-	for j in xrange(len(kmean[0])):
+for i in range(kval):
+	for j in range(len(kmean[0])):
 		kmean[i,j] = random.uniform(min(trainparamnorm[:,j]),max(trainparamnorm[:,j]))
 
 #looping of real algorithm
 distmin = np.zeros((len(trainparamnorm)))
-for i in xrange(itertot):
-	print 'iterasi ke', i
-	for j in xrange(len(distmin)):
+for i in range(itertot):
+	print ('iterasi ke', i)
+	for j in range(len(distmin)):
 		#determine euclid distance
 		distall = np.sum((trainparamnorm[j] - kmean)**2.0, axis=1)**0.5
 		distmin[j] = np.argmin(distall)
 
 	#search new k mean
-	for j in xrange(kval):
+	for j in range(kval):
 		clust = []
-		for k in xrange(len(distmin)):
+		for k in range(len(distmin)):
 			if distmin[k] == j:
 				clust.append(trainparamnorm[k])
 		if len(clust) > 0:
@@ -93,7 +94,7 @@ for i in xrange(itertot):
 #tranform our input
 newinput = transforminput(trainparamnorm, kmean)
 
-print trainlabel
+print (trainlabel)
 ##########################
 #gradient descent session#
 ##########################
@@ -116,22 +117,22 @@ lifeprob = mod.predict(newinputtest)
 
 #determine biner accuracy
 binpred = np.zeros((len(lifeprob)))
-for i in xrange(len(lifeprob)):
+for i in range(len(lifeprob)):
 	if lifeprob[i] > 0.5:
 		binpred[i] = 1.
 
 score = 0
-for i in xrange(len(testlabel)):
+for i in range(len(testlabel)):
 	if binpred[i] == testlabel[i]:
 		score += 1
 accbin = float(score) / float(len(testlabel))
 
 #determine brier score
 brierscore = 0
-for i in xrange(len(testlabel)):
+for i in range(len(testlabel)):
 	brierscore += (testlabel[i] - lifeprob[i])**2.0
 brierscore = brierscore / float(len(testlabel))
 
-for i in xrange(len(testlabel)):
-	print lifeprob[i], testlabel[i]
-print accbin, brierscore[0]
+for i in range(len(testlabel)):
+	print (lifeprob[i], testlabel[i])
+print (accbin, brierscore[0])
